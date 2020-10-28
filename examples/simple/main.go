@@ -5,7 +5,7 @@ import "github.com/tamboto2000/minirest"
 func main() {
 	mns := minirest.New()
 	mns.ServePort("8081")
-	mns.HandleFunc("GET", "/hello/{Name}", Get)
+	mns.HandleFunc("GET", "/hello/{name}", Get)
 	mns.RunServer()
 }
 

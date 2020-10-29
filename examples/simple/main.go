@@ -9,7 +9,17 @@ func main() {
 	mns.RunServer()
 }
 
-func Get(param struct{ Name string }) *minirest.ResponseBuilder {
+type Person struct {
+	Name     string
+	Birthday string
+	Gender   string
+}
+
+func Get(name string, filter Person) *minirest.ResponseBuilder {
 	responseBuilder := new(minirest.ResponseBuilder)
-	return responseBuilder.Ok(param.Name)
+	return responseBuilder.Ok(Person{
+		Name:     name,
+		Birthday: filter.Birthday,
+		Gender:   filter.Gender,
+	})
 }

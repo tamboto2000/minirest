@@ -17,7 +17,7 @@ import (
 //example:
 // type Controller struct {
 // 	UserService *UserService
-// 	ItemService ItemService
+// 	ItemService *ItemService
 // }
 type Controller interface {
 	//Endpoints register all endpoints to its handler

@@ -1,1 +1,2 @@
-A micro REST framework for my personal projects
+A micro REST framework
+Under construction

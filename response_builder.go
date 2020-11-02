@@ -33,7 +33,7 @@ type Response struct {
 	StatusCode  int         `json:"statusCode"`
 	Status      string      `json:"status"`
 	Description string      `json:"description,omitempty"`
-	Data        interface{} `json:"data,omitempty"`
+	Body        interface{} `json:"body,omitempty"`
 }
 
 //ResponseBuilder is a response builder
@@ -48,7 +48,7 @@ func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	resp.data = Response{
 		StatusCode: CodeOk,
 		Status:     MsgOk,
-		Data:       data,
+		Body:       data,
 	}
 
 	return resp

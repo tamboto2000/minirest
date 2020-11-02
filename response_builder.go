@@ -36,11 +36,13 @@ type Response struct {
 	Data        interface{} `json:"data,omitempty"`
 }
 
+//ResponseBuilder is a response builder
 type ResponseBuilder struct {
 	statusCode int
 	data       interface{}
 }
 
+//Ok build response with HTTP Status 200
 func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	resp.statusCode = CodeOk
 	resp.data = Response{
@@ -52,6 +54,7 @@ func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	return resp
 }
 
+//NoContent build response with HTTP Status 204
 func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNoContent
 	resp.data = Response{
@@ -63,6 +66,7 @@ func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 	return resp
 }
 
+//BadRequest build response with HTTP Status 400
 func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 	resp.statusCode = CodeBadRequest
 	resp.data = Response{
@@ -74,6 +78,7 @@ func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 	return resp
 }
 
+//NotFound build response with HTTP Status 404
 func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNotFound
 	resp.data = Response{
@@ -85,6 +90,7 @@ func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 	return resp
 }
 
+//MethodNotAllowed build response with HTTP Status 405
 func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 	resp.statusCode = CodeMethodNotAllowed
 	resp.data = Response{
@@ -96,6 +102,7 @@ func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 	return resp
 }
 
+//InternalError build response with HTTP Status 500
 func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 	resp.statusCode = CodeInternalError
 	resp.data = Response{
@@ -107,6 +114,7 @@ func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 	return resp
 }
 
+//ServerOverload build response with HTTP Status 503
 func (resp *ResponseBuilder) ServerOverload(desc string) *ResponseBuilder {
 	resp.statusCode = CodeOverload
 	resp.data = Response{

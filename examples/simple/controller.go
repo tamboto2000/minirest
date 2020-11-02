@@ -35,7 +35,10 @@ func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Per
 
 func (smp *SimpleController) Post(person *Person) *minirest.ResponseBuilder {
 	responseBuilder := new(minirest.ResponseBuilder)
-	return responseBuilder.Ok(person)
+	return responseBuilder.
+		Status(200).
+		Headers([][2]string{{"Hello", "World"}}).
+		Body(person)
 }
 
 func (smp *SimpleController) Endpoints() *minirest.Endpoints {

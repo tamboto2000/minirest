@@ -96,10 +96,11 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 
 	//call controller.Endpoints and register all endpoints
 	endpoints := controller.Endpoints()
+	basePath := val.FieldByName("BasePath").Interface().(string)
 	for _, endpoint := range endpoints.endpoints {
 		method := strings.ToLower(endpoint.method)
 		if method == "get" {
-			mn.router.GET(endpoint.path, handleWithoutPostBody(endpoint.callback))
+			mn.router.GET(basePath+endpoint.path, handleWithoutPostBody(endpoint.callback))
 		}
 	}
 

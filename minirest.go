@@ -9,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+//Minirest is singleton for Minirest framework
 type Minirest struct {
 	services    map[string]Service
 	controllers map[string]Controller
@@ -100,43 +101,15 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	endpoints := controller.Endpoints()
 	for _, endpoint := range endpoints.endpoints {
 		method := strings.ToLower(endpoint.method)
-		if method == "get" {
+		if method == "get" || method == "delete" {
 			mn.router.GET(endpoints.basePath+endpoint.path, handleWithoutBody(endpoint.callback))
 		}
 
-		if method == "delete" {
-			mn.router.DELETE(endpoints.basePath+endpoint.path, handleWithoutBody(endpoint.callback))
+		if method == "post" || method == "put" || method == "patch" {
+			mn.router.POST(endpoints.basePath+endpoint.path, handleWithBody(endpoint.callback))
 		}
 	}
 
 	ctrlName := strings.Split(val.Type().String(), ".")
 	mn.controllers[ctrlName[len(ctrlName)-1]] = controller
 }
-
-// //wrapper for callback with post body, such as POST, PUT, or PATCH
-// func (mn *Minirest) callbackWithPostBody(callback interface{}, w http.ResponseWriter, r *http.Request) {
-// 	writer := new(ResponseBuilder)
-// 	//get parameter in callback
-// 	//only the first parameter are considered the real parameter,
-// 	//no matter how much params you have
-// 	param := reflect.New(reflect.ValueOf(callback).Type().In(0))
-// 	if err := json.NewDecoder(r.Body).Decode(param.Interface()); err != nil {
-// 		writer.BadRequest(err.Error())
-// 		writer.write(w)
-// 		return
-// 	}
-
-// 	returns := reflect.ValueOf(callback).Call([]reflect.Value{param.Elem()})
-// 	respBody := returns[0].Interface().(*ResponseBuilder)
-// 	respBody.write(w)
-
-// 	r.Body.Close()
-// }
-
-// func stringToInt(data string) (int, error) {
-// 	return strconv.Atoi(data)
-// }
-
-// func stringToFloat64(data string) (float64, error) {
-// 	return strconv.ParseFloat(data, 64)
-// }

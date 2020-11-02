@@ -3,6 +3,7 @@ package minirest
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -40,26 +41,32 @@ func (ep *Endpoints) BasePath(path string) {
 	ep.basePath = path
 }
 
+//Add add endpoint with custom method
 func (ep *Endpoints) Add(method, path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{method, path, callback})
 }
 
+//GET add endpoint with method GET
 func (ep *Endpoints) GET(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"GET", path, callback})
 }
 
+//DELETE add endpoint with method DELETE
 func (ep *Endpoints) DELETE(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"DELETE", path, callback})
 }
 
+//POST add method endpoint with method POST
 func (ep *Endpoints) POST(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"POST", path, callback})
 }
 
+//PUT add method endpoint with method PUT
 func (ep *Endpoints) PUT(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"PUT", path, callback})
 }
 
+//PATCH add method endpoint with method PATCH
 func (ep *Endpoints) PATCH(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"PATCH", path, callback})
 }
@@ -169,21 +176,35 @@ func handleWithoutBody(callback interface{}) httprouter.Handle {
 func handleWithBody(callback interface{}) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		writer := new(ResponseBuilder)
+		m := reflect.ValueOf(callback)
+
 		//get parameter in callback
 		//only the first parameter are considered the real parameter,
 		//no matter how much params you have
-		param := reflect.New(reflect.ValueOf(callback).Type().In(0))
-		if err := json.NewDecoder(r.Body).Decode(param.Interface()); err != nil {
+		param := reflect.New(m.Type().In(0))
+		// if param.Elem().Kind() == reflect.Ptr {
+		// 	param = param.Elem()
+		// 	param.Set(reflect.New(param.Type().Elem()))
+		// 	err = json.NewDecoder(r.Body).Decode(param.Interface())
+		// } else {
+		// 	err = json.NewDecoder(r.Body).Decode(param.Interface())
+		// }
+
+		// if err != nil {
+		// 	writer.BadRequest(err.Error())
+		// 	writer.write(w)
+		// 	return
+		// }
+
+		if err := bodyDecoder(r.Body, param); err != nil {
 			writer.BadRequest(err.Error())
 			writer.write(w)
 			return
 		}
 
-		returns := reflect.ValueOf(callback).Call([]reflect.Value{param.Elem()})
+		returns := m.Call([]reflect.Value{param.Elem()})
 		respBody := returns[0].Interface().(*ResponseBuilder)
 		respBody.write(w)
-
-		r.Body.Close()
 	}
 }
 
@@ -220,4 +241,14 @@ func assignParam(param reflect.Value, pair httprouter.Param) error {
 	}
 
 	return nil
+}
+
+func bodyDecoder(src io.ReadCloser, dest reflect.Value) error {
+	if dest.Elem().Kind() == reflect.Ptr {
+		dest = dest.Elem()
+		dest.Set(reflect.New(dest.Type().Elem()))
+		return json.NewDecoder(src).Decode(dest.Interface())
+	}
+
+	return json.NewDecoder(src).Decode(dest.Interface())
 }

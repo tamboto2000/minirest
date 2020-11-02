@@ -33,10 +33,16 @@ func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Per
 	})
 }
 
+func (smp *SimpleController) Post(person *Person) *minirest.ResponseBuilder {
+	responseBuilder := new(minirest.ResponseBuilder)
+	return responseBuilder.Ok(person)
+}
+
 func (smp *SimpleController) Endpoints() *minirest.Endpoints {
 	endpoints := new(minirest.Endpoints)
 	endpoints.BasePath("/simple")
 	endpoints.GET("/hello/:id/:name/:uuid", smp.Get)
+	endpoints.POST("/hello", smp.Post)
 
 	return endpoints
 }

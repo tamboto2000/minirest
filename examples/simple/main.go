@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/tamboto2000/minirest"
 )
 
@@ -16,10 +14,11 @@ func main() {
 }
 
 type SimpleService struct {
+	Message string
 }
 
 func (sv *SimpleService) Init() {
-	fmt.Println("init")
+	sv.Message = "Hello, world!"
 }
 
 type SimpleController struct {
@@ -41,6 +40,7 @@ type Person struct {
 	Name     string
 	Birthday string
 	Gender   string
+	Message  string
 }
 
 func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Person) *minirest.ResponseBuilder {
@@ -51,5 +51,6 @@ func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Per
 		Name:     *name,
 		Birthday: filter.Birthday,
 		Gender:   filter.Gender,
+		Message:  smp.SimpleService.Message,
 	})
 }

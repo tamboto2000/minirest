@@ -1,6 +1,7 @@
 package minirest
 
 import (
+	"errors"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -67,73 +68,23 @@ func handleWithoutPostBody(callback interface{}) httprouter.Handle {
 				}
 
 				param.Set(reflect.New(param.Type().Elem()))
-
-				if param.Type().Elem().Kind() == reflect.String {
-					param.Elem().SetString(pair.Value)
-					params[i] = param
-
-					continue
-				}
-
-				if param.Type().Elem().Kind() == reflect.Int {
-					if intVal, err := stringToInt(pair.Value); err == nil {
-						param.Elem().SetInt(int64(intVal))
-						params[i] = param
-
-						continue
-					}
-
-					writer.BadRequest(pair.Key + " is not type int")
+				if err := assignParam(param.Elem(), pair); err != nil {
+					writer.BadRequest(err.Error())
 					writer.write(w)
 					return
 				}
 
-				if param.Type().Elem().Kind() == reflect.Float64 {
-					if flt64Val, err := stringToFloat64(pair.Value); err == nil {
-						param.Elem().SetFloat(flt64Val)
-						params[i] = param
-
-						continue
-					}
-
-					writer.BadRequest(pair.Key + " is not type float64")
-					writer.write(w)
-					return
-				}
-			}
-
-			if param.Kind() == reflect.String {
-				param.SetString(pair.Value)
 				params[i] = param
-
 				continue
 			}
 
-			if param.Kind() == reflect.Int {
-				if intVal, err := stringToInt(pair.Value); err == nil {
-					param.SetInt(int64(intVal))
-					params[i] = param
-
-					continue
-				}
-
-				writer.BadRequest(pair.Key + " is not type int")
+			if err := assignParam(param, pair); err != nil {
+				writer.BadRequest(err.Error())
 				writer.write(w)
 				return
 			}
 
-			if param.Kind() == reflect.Float64 {
-				if flt64Val, err := stringToFloat64(pair.Value); err == nil {
-					param.SetFloat(flt64Val)
-					params[i] = param
-
-					continue
-				}
-
-				writer.BadRequest(pair.Key + " is not type float64")
-				writer.write(w)
-				return
-			}
+			params[i] = param
 		}
 
 		//extract url queries
@@ -194,4 +145,31 @@ func stringToInt(data string) (int, error) {
 
 func stringToFloat64(data string) (float64, error) {
 	return strconv.ParseFloat(data, 64)
+}
+
+func assignParam(param reflect.Value, pair httprouter.Param) error {
+	if param.Kind() == reflect.String {
+		param.SetString(pair.Value)
+		return nil
+	}
+
+	if param.Kind() == reflect.Int {
+		if intVal, err := stringToInt(pair.Value); err == nil {
+			param.SetInt(int64(intVal))
+			return nil
+		}
+
+		return errors.New(pair.Key + " is not type int")
+	}
+
+	if param.Kind() == reflect.Float64 {
+		if flt64Val, err := stringToFloat64(pair.Value); err == nil {
+			param.SetFloat(flt64Val)
+			return nil
+		}
+
+		return errors.New(pair.Key + " is not type float64")
+	}
+
+	return nil
 }

@@ -182,20 +182,6 @@ func handleWithBody(callback interface{}) httprouter.Handle {
 		//only the first parameter are considered the real parameter,
 		//no matter how much params you have
 		param := reflect.New(m.Type().In(0))
-		// if param.Elem().Kind() == reflect.Ptr {
-		// 	param = param.Elem()
-		// 	param.Set(reflect.New(param.Type().Elem()))
-		// 	err = json.NewDecoder(r.Body).Decode(param.Interface())
-		// } else {
-		// 	err = json.NewDecoder(r.Body).Decode(param.Interface())
-		// }
-
-		// if err != nil {
-		// 	writer.BadRequest(err.Error())
-		// 	writer.write(w)
-		// 	return
-		// }
-
 		if err := bodyDecoder(r.Body, param); err != nil {
 			writer.BadRequest(err.Error())
 			writer.write(w)

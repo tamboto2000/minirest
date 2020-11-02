@@ -1,5 +1,11 @@
 package minirest
 
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
 //HTTP status codes
 const (
 	CodeOk               = 200
@@ -24,8 +30,8 @@ const (
 
 //Response is body for HTTP response
 type Response struct {
-	Code        int         `json:"code"`
-	Message     string      `json:"message"`
+	StatusCode  int         `json:"statusCode"`
+	Status      string      `json:"status"`
 	Description string      `json:"description,omitempty"`
 	Data        interface{} `json:"data,omitempty"`
 }
@@ -38,9 +44,9 @@ type ResponseBuilder struct {
 func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	resp.statusCode = CodeOk
 	resp.data = Response{
-		Code:    CodeOk,
-		Message: MsgOk,
-		Data:    data,
+		StatusCode: CodeOk,
+		Status:     MsgOk,
+		Data:       data,
 	}
 
 	return resp
@@ -49,8 +55,8 @@ func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNoContent
 	resp.data = Response{
-		Code:        CodeNoContent,
-		Message:     MsgNoContent,
+		StatusCode:  CodeNoContent,
+		Status:      MsgNoContent,
 		Description: desc,
 	}
 
@@ -60,8 +66,8 @@ func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 	resp.statusCode = CodeBadRequest
 	resp.data = Response{
-		Code:        CodeBadRequest,
-		Message:     MsgBadRequest,
+		StatusCode:  CodeBadRequest,
+		Status:      MsgBadRequest,
 		Description: desc,
 	}
 
@@ -71,8 +77,8 @@ func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNotFound
 	resp.data = Response{
-		Code:        CodeNotFound,
-		Message:     MsgNotFound,
+		StatusCode:  CodeNotFound,
+		Status:      MsgNotFound,
 		Description: desc,
 	}
 
@@ -82,8 +88,8 @@ func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 	resp.statusCode = CodeMethodNotAllowed
 	resp.data = Response{
-		Code:        CodeMethodNotAllowed,
-		Message:     MsgMethodNotAllowed,
+		StatusCode:  CodeMethodNotAllowed,
+		Status:      MsgMethodNotAllowed,
 		Description: desc,
 	}
 
@@ -93,8 +99,8 @@ func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 	resp.statusCode = CodeInternalError
 	resp.data = Response{
-		Code:        CodeInternalError,
-		Message:     MsgInternalError,
+		StatusCode:  CodeInternalError,
+		Status:      MsgInternalError,
 		Description: desc,
 	}
 
@@ -104,10 +110,18 @@ func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 func (resp *ResponseBuilder) ServerOverload(desc string) *ResponseBuilder {
 	resp.statusCode = CodeOverload
 	resp.data = Response{
-		Code:        CodeOverload,
-		Message:     MsgOverloadError,
+		StatusCode:  CodeOverload,
+		Status:      MsgOverloadError,
 		Description: desc,
 	}
 
 	return resp
+}
+
+func (resp *ResponseBuilder) write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.statusCode)
+	if err := json.NewEncoder(w).Encode(resp.data); err != nil {
+		log.Println(err.Error())
+	}
 }

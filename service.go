@@ -1,8 +1,7 @@
 package minirest
 
+//Service is interface for service
 type Service interface {
-	Init() error
-	Start() error
-	Stop() error
-	Clean() error
+	//Init initialize service
+	Init()
 }

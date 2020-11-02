@@ -89,6 +89,8 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 			if regsrv, ok := mn.services[snamestr]; ok {
 				f.Set(reflect.ValueOf(regsrv))
 			} else {
+				s.Init()
+				f.Set(reflect.ValueOf(s))
 				mn.AddService(s)
 			}
 		}
@@ -96,198 +98,20 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 
 	//call controller.Endpoints and register all endpoints
 	endpoints := controller.Endpoints()
-	basePath := val.FieldByName("BasePath").Interface().(string)
 	for _, endpoint := range endpoints.endpoints {
 		method := strings.ToLower(endpoint.method)
 		if method == "get" {
-			mn.router.GET(basePath+endpoint.path, handleWithoutPostBody(endpoint.callback))
+			mn.router.GET(endpoints.basePath+endpoint.path, handleWithoutBody(endpoint.callback))
+		}
+
+		if method == "delete" {
+			mn.router.DELETE(endpoints.basePath+endpoint.path, handleWithoutBody(endpoint.callback))
 		}
 	}
 
 	ctrlName := strings.Split(val.Type().String(), ".")
 	mn.controllers[ctrlName[len(ctrlName)-1]] = controller
 }
-
-// //HandleFunc assign callback to an endpoint/path
-// func (mn *Minirest) HandleFunc(method string, path string, callback interface{}) {
-// 	mn.router.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-// 		//right now the supported method without post body or form is GET and DELETE
-// 		if strings.ToLower(r.Method) == "get" || strings.ToLower(r.Method) == "delete" {
-// 			mn.callbackWithoutPostBody(callback, w, r)
-// 			return
-// 		}
-
-// 		//right now the supported method with post body or form is POST, PUT, and PATCH
-// 		if strings.ToUpper(r.Method) == "post" || strings.ToUpper(r.Method) == "put" || strings.ToUpper(r.Method) == "patch" {
-// 			mn.callbackWithPostBody(callback, w, r)
-// 			return
-// 		}
-// 	}).Methods(method)
-// }
-
-// //wrapper for callback without post body
-// func (mn *Minirest) callbackWithoutPostBody(callback interface{}, w http.ResponseWriter, r *http.Request) {
-// 	writer := new(ResponseBuilder)
-// 	decoder := schema.NewDecoder()
-// 	var params []reflect.Value
-// 	//get all parameters in callback
-// 	m := reflect.ValueOf(callback)
-// 	for i := 0; i < m.Type().NumIn(); i++ {
-// 		params = append(params, reflect.New(m.Type().In(i)))
-// 	}
-
-// 	//extract path variables
-// 	var pathVars []keyVal
-
-// 	for key, val := range mux.Vars(r) {
-// 		pathVars = append(pathVars, keyVal{key, val})
-// 	}
-
-// 	paramsFromContext := httprouter.ParamsFromContext(r.Context())
-// 	fmt.Println(paramsFromContext)
-
-// 	//match all path variables with callback parameters index and assign callback param
-// 	//right now the supported type are only int and float64
-// 	for i, pair := range pathVars {
-// 		param := params[i].Elem()
-
-// 		//exclude type struct as it's only for filtering (url query)
-// 		if param.Kind() == reflect.Struct {
-
-// 			continue
-// 		}
-
-// 		//handle pointer param
-// 		if param.Kind() == reflect.Ptr {
-// 			if param.Type().Elem().Kind() == reflect.Struct {
-
-// 				continue
-// 			}
-
-// 			param.Set(reflect.New(param.Type().Elem()))
-
-// 			if param.Type().Elem().Kind() == reflect.String {
-// 				param.Elem().SetString(pair.val)
-// 				params[i] = param
-
-// 				continue
-// 			}
-
-// 			if param.Type().Elem().Kind() == reflect.Int {
-// 				if intVal, err := stringToInt(pair.val); err == nil {
-// 					param.Elem().SetInt(int64(intVal))
-// 					params[i] = param
-
-// 					continue
-// 				}
-
-// 				writer.BadRequest(pair.key + " is not type int")
-// 				writer.write(w)
-// 				return
-// 			}
-
-// 			if param.Type().Elem().Kind() == reflect.Float64 {
-// 				if flt64Val, err := stringToFloat64(pair.val); err == nil {
-// 					param.Elem().SetFloat(flt64Val)
-// 					params[i] = param
-
-// 					continue
-// 				}
-
-// 				writer.BadRequest(pair.key + " is not type float64")
-// 				writer.write(w)
-// 				return
-// 			}
-// 		}
-
-// 		if param.Kind() == reflect.String {
-// 			param.SetString(pair.val)
-// 			params[i] = param
-
-// 			continue
-// 		}
-
-// 		if param.Kind() == reflect.Int {
-// 			if intVal, err := stringToInt(pair.val); err == nil {
-// 				param.SetInt(int64(intVal))
-// 				params[i] = param
-
-// 				continue
-// 			}
-
-// 			fmt.Println("index:", i)
-// 			fmt.Println("val:", pair.val)
-// 			fmt.Println("param type:", param.Kind())
-// 			fmt.Println("variables:", pathVars)
-// 			writer.BadRequest(pair.key + " is not type int")
-// 			writer.write(w)
-// 			return
-// 		}
-
-// 		if param.Kind() == reflect.Float64 {
-// 			if flt64Val, err := stringToFloat64(pair.val); err == nil {
-// 				param.SetFloat(flt64Val)
-// 				params[i] = param
-
-// 				continue
-// 			}
-
-// 			writer.BadRequest(pair.key + " is not type float64")
-// 			writer.write(w)
-// 			return
-// 		}
-// 	}
-
-// 	//extract url queries
-// 	queriesVars := r.URL.Query()
-// 	//iterate callback params, find the one with type struct. Note that once param
-// 	//with type struct is found, iteration will stop and parse the url queries to it
-// 	//so there will be only one param with type struct is allowed as queries
-// 	for i, param := range params {
-// 		//if param can set, then it must be path variable, skip!
-// 		if param.CanSet() {
-// 			continue
-// 		}
-
-// 		if v := param.Elem(); v.Kind() == reflect.Ptr {
-// 			if v.Type().Elem().Kind() != reflect.Struct {
-// 				continue
-// 			}
-
-// 			//v now a pointer to a struct
-// 			//initialize the struct
-// 			v.Set(reflect.New(v.Type().Elem()))
-
-// 			if err := decoder.Decode(v.Interface(), queriesVars); err != nil {
-// 				writer.BadRequest(err.Error())
-// 				writer.write(w)
-// 				return
-// 			}
-
-// 			params[i] = param.Elem()
-
-// 			break
-// 		}
-
-// 		if param.Elem().Kind() == reflect.Struct {
-// 			if err := decoder.Decode(param.Interface(), queriesVars); err != nil {
-// 				writer.BadRequest(err.Error())
-// 				writer.write(w)
-// 				return
-// 			}
-
-// 			params[i] = param.Elem()
-
-// 			break
-// 		}
-// 	}
-
-// 	//call callback
-// 	//note that callback only can have one return value, and it must be *ResponseBuilder
-// 	returns := reflect.ValueOf(callback).Call(params)
-// 	respBuilder := returns[0].Interface().(*ResponseBuilder)
-// 	respBuilder.write(w)
-// }
 
 // //wrapper for callback with post body, such as POST, PUT, or PATCH
 // func (mn *Minirest) callbackWithPostBody(callback interface{}, w http.ResponseWriter, r *http.Request) {

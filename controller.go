@@ -1,6 +1,7 @@
 package minirest
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"reflect"
@@ -11,7 +12,6 @@ import (
 )
 
 //Controller is interface for controller
-//controller must have field BasePath string for sub-routing, otherwise root path will be used (/)
 //if you want to register service into controller, make sure you have field with the same name as the service
 //example:
 // type Controller struct {
@@ -31,14 +31,41 @@ type endpoint struct {
 
 //Endpoints register handlers its path and method
 type Endpoints struct {
+	basePath  string
 	endpoints []endpoint
+}
+
+//BasePath set base path for endpoints
+func (ep *Endpoints) BasePath(path string) {
+	ep.basePath = path
 }
 
 func (ep *Endpoints) Add(method, path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{method, path, callback})
 }
 
-func handleWithoutPostBody(callback interface{}) httprouter.Handle {
+func (ep *Endpoints) GET(path string, callback interface{}) {
+	ep.endpoints = append(ep.endpoints, endpoint{"GET", path, callback})
+}
+
+func (ep *Endpoints) DELETE(path string, callback interface{}) {
+	ep.endpoints = append(ep.endpoints, endpoint{"DELETE", path, callback})
+}
+
+func (ep *Endpoints) POST(path string, callback interface{}) {
+	ep.endpoints = append(ep.endpoints, endpoint{"POST", path, callback})
+}
+
+func (ep *Endpoints) PUT(path string, callback interface{}) {
+	ep.endpoints = append(ep.endpoints, endpoint{"PUT", path, callback})
+}
+
+func (ep *Endpoints) PATCH(path string, callback interface{}) {
+	ep.endpoints = append(ep.endpoints, endpoint{"PATCH", path, callback})
+}
+
+//wrapper for request without body, such as GET and DELETE
+func handleWithoutBody(callback interface{}) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, pathVars httprouter.Params) {
 		writer := new(ResponseBuilder)
 		decoder := schema.NewDecoder()
@@ -136,6 +163,27 @@ func handleWithoutPostBody(callback interface{}) httprouter.Handle {
 		returns := reflect.ValueOf(callback).Call(params)
 		respBuilder := returns[0].Interface().(*ResponseBuilder)
 		respBuilder.write(w)
+	}
+}
+
+func handleWithBody(callback interface{}) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		writer := new(ResponseBuilder)
+		//get parameter in callback
+		//only the first parameter are considered the real parameter,
+		//no matter how much params you have
+		param := reflect.New(reflect.ValueOf(callback).Type().In(0))
+		if err := json.NewDecoder(r.Body).Decode(param.Interface()); err != nil {
+			writer.BadRequest(err.Error())
+			writer.write(w)
+			return
+		}
+
+		returns := reflect.ValueOf(callback).Call([]reflect.Value{param.Elem()})
+		respBody := returns[0].Interface().(*ResponseBuilder)
+		respBody.write(w)
+
+		r.Body.Close()
 	}
 }
 

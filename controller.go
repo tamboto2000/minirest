@@ -1,7 +1,6 @@
 package minirest
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -118,10 +117,6 @@ func handleWithoutPostBody(callback interface{}) httprouter.Handle {
 					continue
 				}
 
-				fmt.Println("index:", i)
-				fmt.Println("val:", pair.Value)
-				fmt.Println("param type:", param.Kind())
-				fmt.Println("variables:", pathVars)
 				writer.BadRequest(pair.Key + " is not type int")
 				writer.write(w)
 				return

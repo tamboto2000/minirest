@@ -44,8 +44,8 @@ func (smp *SimpleController) Post(person *Person) *minirest.ResponseBuilder {
 func (smp *SimpleController) Endpoints() *minirest.Endpoints {
 	endpoints := new(minirest.Endpoints)
 	endpoints.BasePath("/simple")
-	endpoints.GET("/hello/:id/:name/:uuid", smp.Get)
-	endpoints.POST("/hello", smp.Post)
+	endpoints.GET("/:id/:name/:uuid", smp.Get)
+	endpoints.POST("/", smp.Post)
 
 	return endpoints
 }

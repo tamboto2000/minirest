@@ -12,15 +12,17 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*Controller is interface for controller
-if you want to register service into controller, make sure you have field with the same name as the service
-example:
-type Controller struct {
-	UserService *UserService
-	ItemService *ItemService
-}*/
+//Controller is interface for controller.
+//If you want to register service into controller, make sure you have field with the same name as the service,
+//example:
+//
+//type Controller struct {
+// 	UserService *UserService
+// 	ItemService *ItemService
+// }
 type Controller interface {
-	//Endpoints register all endpoints to its handler
+	//Endpoints register all endpoints to its handler.
+	//You can register your middleware as well in here
 	Endpoints() *Endpoints
 }
 

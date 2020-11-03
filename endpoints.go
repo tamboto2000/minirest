@@ -1,5 +1,9 @@
 package minirest
 
+import (
+	"net/http"
+)
+
 type endpoint struct {
 	method   string
 	path     string
@@ -8,8 +12,9 @@ type endpoint struct {
 
 //Endpoints register handlers its path and method
 type Endpoints struct {
-	basePath  string
-	endpoints []endpoint
+	basePath   string
+	endpoints  []endpoint
+	middleware http.HandlerFunc
 }
 
 //BasePath set base path for endpoints

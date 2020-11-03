@@ -56,8 +56,8 @@ func (mn *Minirest) ServePort(port string) {
 	mn.port = port
 }
 
-/*AddService add service.
-service must be pointer to struct*/
+//AddService add service.
+//Service must be pointer to struct
 func (mn *Minirest) AddService(service Service) {
 	val := reflect.ValueOf(service)
 	service.Init()
@@ -65,9 +65,9 @@ func (mn *Minirest) AddService(service Service) {
 	mn.services[servName[len(servName)-1]] = service
 }
 
-/*AddController add controller
-you can link services srv into controller, see Controller and AddService for more information
-if service is not registered, it will automatically register it*/
+//AddController add controller.
+//You can link services srv into controller, see Controller and AddService for more information.
+//If service is not registered, it will automatically register it
 func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	val := reflect.ValueOf(controller)
 

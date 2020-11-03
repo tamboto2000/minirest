@@ -113,3 +113,19 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	ctrlName := strings.Split(val.Type().String(), ".")
 	mn.controllers[ctrlName[len(ctrlName)-1]] = controller
 }
+
+//CORS set CORS
+func (mn *Minirest) CORS(origins, creds, exposeHead, maxAge, methods, headers string) {
+	mn.router.GlobalOPTIONS = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Access-Control-Request-Method") != "" {
+			header := w.Header()
+			header.Add("Access-Control-Allow-Origin", origins)
+			header.Add("Access-Control-Allow-Credentials", creds)
+			header.Add("Access-Control-Expose-Headers", exposeHead)
+			header.Add("Access-Control-Allow-Headers", headers)
+			header.Add("Access-Control-Allow-Methods", methods)
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+}

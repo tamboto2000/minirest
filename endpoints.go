@@ -1,9 +1,5 @@
 package minirest
 
-import (
-	"net/http"
-)
-
 type endpoint struct {
 	method   string
 	path     string
@@ -14,7 +10,7 @@ type endpoint struct {
 type Endpoints struct {
 	basePath   string
 	endpoints  []endpoint
-	middleware http.HandlerFunc
+	middleware *handleChain
 }
 
 //BasePath set base path for endpoints
@@ -50,4 +46,13 @@ func (ep *Endpoints) PUT(path string, callback interface{}) {
 //PATCH add method endpoint with method PATCH
 func (ep *Endpoints) PATCH(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"PATCH", path, callback})
+}
+
+//Middlewares resgiter middleware chain
+func (ep *Endpoints) Middlewares(mds ...handleToHandle) {
+	if ep.middleware == nil {
+		ep.middleware = new(handleChain)
+	}
+
+	ep.middleware.handles = append(ep.middleware.handles, mds...)
 }

@@ -101,12 +101,25 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	endpoints := controller.Endpoints()
 	for _, endpoint := range endpoints.endpoints {
 		method := strings.ToLower(endpoint.method)
+		var handle httprouter.Handle
 		if method == "get" || method == "delete" {
-			mn.router.Handle(method, endpoints.basePath+endpoint.path, handleWithoutBody(endpoint.callback))
+			if endpoints.middleware != nil {
+				handle = endpoints.middleware.handleChain(handleWithoutBody(endpoint.callback))
+			} else {
+				handle = handleWithoutBody(endpoint.callback)
+			}
+
+			mn.router.Handle(method, endpoints.basePath+endpoint.path, handle)
 		}
 
 		if method == "post" || method == "put" || method == "patch" {
-			mn.router.Handle(method, endpoints.basePath+endpoint.path, handleWithBody(endpoint.callback))
+			if endpoints.middleware != nil {
+				handle = endpoints.middleware.handleChain(handleWithBody(endpoint.callback))
+			} else {
+				handle = handleWithBody(endpoint.callback)
+			}
+
+			mn.router.Handle(method, endpoints.basePath+endpoint.path, handle)
 		}
 	}
 

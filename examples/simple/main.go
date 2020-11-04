@@ -9,7 +9,7 @@ func main() {
 
 	mns.AddService(new(Simple2Service))
 	mns.AddController(new(SimpleController), new(SimpleService), new(Simple2Service))
-
+	mns.CORS(minirest.CORSOption{AllowMethods: "POST, GET"})
 	mns.ServePort("8081")
 	mns.RunServer()
 }

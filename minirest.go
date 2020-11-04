@@ -1,6 +1,7 @@
 package minirest
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -128,17 +129,42 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 }
 
 //CORS set CORS
-func (mn *Minirest) CORS(origins, creds, exposeHead, maxAge, methods, headers string) {
+func (mn *Minirest) CORS(opt CORSOption) {
+	mn.router.HandleOPTIONS = true
 	mn.router.GlobalOPTIONS = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("CORS")
 		if r.Header.Get("Access-Control-Request-Method") != "" {
 			header := w.Header()
-			header.Add("Access-Control-Allow-Origin", origins)
-			header.Add("Access-Control-Allow-Credentials", creds)
-			header.Add("Access-Control-Expose-Headers", exposeHead)
-			header.Add("Access-Control-Allow-Headers", headers)
-			header.Add("Access-Control-Allow-Methods", methods)
+			if opt.AllowOrigin != "" {
+				header.Add("Access-Control-Allow-Origin", opt.AllowOrigin)
+			}
+
+			if opt.AllowCredentials != "" {
+				header.Add("Access-Control-Allow-Credentials", opt.AllowCredentials)
+			}
+
+			if opt.ExposeHeaders != "" {
+				header.Add("Access-Control-Expose-Headers", opt.ExposeHeaders)
+			}
+
+			if opt.AllowHeaders != "" {
+				header.Add("Access-Control-Allow-Headers", opt.AllowHeaders)
+			}
+
+			if opt.AllowMethods != "" {
+				header.Add("Access-Control-Allow-Methods", opt.AllowMethods)
+			}
 		}
 
 		w.WriteHeader(http.StatusNoContent)
 	})
+}
+
+//CORSOption set options for CORS headers
+type CORSOption struct {
+	AllowOrigin      string
+	AllowCredentials string
+	ExposeHeaders    string
+	AllowHeaders     string
+	AllowMethods     string
 }

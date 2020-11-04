@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-//HTTP status codes
+// HTTP status codes
 const (
 	CodeOk               = 200
 	CodeNoContent        = 204
@@ -17,7 +17,7 @@ const (
 	CodeOverload         = 503
 )
 
-//HTTP status message
+// HTTP status message
 const (
 	MsgOk               = "ok"
 	MsgNoContent        = "no_content"
@@ -28,7 +28,7 @@ const (
 	MsgOverloadError    = "server_overload"
 )
 
-//Response is body for HTTP response
+// Response is body for HTTP response
 type Response struct {
 	StatusCode  int         `json:"statusCode"`
 	Status      string      `json:"status"`
@@ -36,34 +36,34 @@ type Response struct {
 	Body        interface{} `json:"body,omitempty"`
 }
 
-//ResponseBuilder is a response builder
+// ResponseBuilder is a response builder
 type ResponseBuilder struct {
 	statusCode int
 	headers    [][2]string
 	body       interface{}
 }
 
-//Status set status code
+// Status set status code
 func (resp *ResponseBuilder) Status(code int) *ResponseBuilder {
 	resp.statusCode = code
 	return resp
 }
 
-//Headers add headers
+// Headers add headers
 func (resp *ResponseBuilder) Headers(headers [][2]string) *ResponseBuilder {
 	resp.headers = headers
 
 	return resp
 }
 
-//Body set body
+// Body set body
 func (resp *ResponseBuilder) Body(body interface{}) *ResponseBuilder {
 	resp.body = body
 
 	return resp
 }
 
-//Ok build response with HTTP Status 200
+// Ok build response with HTTP Status 200
 func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	resp.statusCode = CodeOk
 	resp.body = Response{
@@ -75,7 +75,7 @@ func (resp *ResponseBuilder) Ok(data interface{}) *ResponseBuilder {
 	return resp
 }
 
-//NoContent build response with HTTP Status 204
+// NoContent build response with HTTP Status 204
 func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNoContent
 	resp.body = Response{
@@ -87,7 +87,7 @@ func (resp *ResponseBuilder) NoContent(desc string) *ResponseBuilder {
 	return resp
 }
 
-//BadRequest build response with HTTP Status 400
+// BadRequest build response with HTTP Status 400
 func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 	resp.statusCode = CodeBadRequest
 	resp.body = Response{
@@ -99,7 +99,7 @@ func (resp *ResponseBuilder) BadRequest(desc string) *ResponseBuilder {
 	return resp
 }
 
-//NotFound build response with HTTP Status 404
+// NotFound build response with HTTP Status 404
 func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 	resp.statusCode = CodeNotFound
 	resp.body = Response{
@@ -111,7 +111,7 @@ func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 	return resp
 }
 
-//MethodNotAllowed build response with HTTP Status 405
+// MethodNotAllowed build response with HTTP Status 405
 func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 	resp.statusCode = CodeMethodNotAllowed
 	resp.body = Response{
@@ -123,7 +123,7 @@ func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 	return resp
 }
 
-//InternalError build response with HTTP Status 500
+// InternalError build response with HTTP Status 500
 func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 	resp.statusCode = CodeInternalError
 	resp.body = Response{
@@ -135,7 +135,7 @@ func (resp *ResponseBuilder) InternalError(desc string) *ResponseBuilder {
 	return resp
 }
 
-//ServerOverload build response with HTTP Status 503
+// ServerOverload build response with HTTP Status 503
 func (resp *ResponseBuilder) ServerOverload(desc string) *ResponseBuilder {
 	resp.statusCode = CodeOverload
 	resp.body = Response{

@@ -12,44 +12,43 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-//Controller is interface for controller.
-//If you want to register service into controller, make sure you have field with the same name as the service,
-//example:
-//
-// type Controller struct {
-// 	 UserService *UserService
-// 	 ItemService *ItemService
-// }
+// Controller is interface for controller.
+// If you want to register service into controller, make sure you have field with the same name as the service,
+// example:
+//  type Controller struct {
+//  	UserService *UserService
+//  	ItemService *ItemService
+//  }
 type Controller interface {
-	//Endpoints register all endpoints to its handler.
-	//You can register your middleware as well in here
+	// Endpoints register all endpoints to its handler.
+	// You can register your middleware as well in here
 	Endpoints() *Endpoints
 }
 
-//wrapper for request without body, such as GET and DELETE
+// wrapper for request without body, such as GET and DELETE
 func handleWithoutBody(callback interface{}) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, pathVars httprouter.Params) {
 		writer := new(ResponseBuilder)
 		decoder := schema.NewDecoder()
 		var params []reflect.Value
-		//get all parameters in callback
+		// get all parameters in callback
 		m := reflect.ValueOf(callback)
 		for i := 0; i < m.Type().NumIn(); i++ {
 			params = append(params, reflect.New(m.Type().In(i)))
 		}
 
-		//match all path variables with callback parameters index and assign callback param
-		//right now the supported type are only int and float64
+		// match all path variables with callback parameters index and assign callback param
+		// right now the supported type are only int and float64
 		for i, pair := range pathVars {
 			param := params[i].Elem()
 
-			//exclude type struct as it's only for filtering (url query)
+			// exclude type struct as it's only for filtering (url query)
 			if param.Kind() == reflect.Struct {
 
 				continue
 			}
 
-			//handle pointer param
+			// handle pointer param
 			if param.Kind() == reflect.Ptr {
 				if param.Type().Elem().Kind() == reflect.Struct {
 
@@ -76,13 +75,13 @@ func handleWithoutBody(callback interface{}) httprouter.Handle {
 			params[i] = param
 		}
 
-		//extract url queries
+		// extract url queries
 		queriesVars := r.URL.Query()
-		//iterate callback params, find the one with type struct. Note that once param
-		//with type struct is found, iteration will stop and parse the url queries to it
-		//so there will be only one param with type struct is allowed as queries
+		// iterate callback params, find the one with type struct. Note that once param
+		// with type struct is found, iteration will stop and parse the url queries to it
+		// so there will be only one param with type struct is allowed as queries
 		for i, param := range params {
-			//if param can set, then it must be path variable, skip!
+			// if param can set, then it must be path variable, skip!
 			if param.CanSet() {
 				continue
 			}
@@ -92,8 +91,8 @@ func handleWithoutBody(callback interface{}) httprouter.Handle {
 					continue
 				}
 
-				//v now a pointer to a struct
-				//initialize the struct
+				// v now a pointer to a struct
+				// initialize the struct
 				v.Set(reflect.New(v.Type().Elem()))
 
 				if err := decoder.Decode(v.Interface(), queriesVars); err != nil {
@@ -120,8 +119,8 @@ func handleWithoutBody(callback interface{}) httprouter.Handle {
 			}
 		}
 
-		//call callback
-		//note that callback only can have one return value, and it must be *ResponseBuilder
+		// call callback
+		// note that callback only can have one return value, and it must be *ResponseBuilder
 		returns := reflect.ValueOf(callback).Call(params)
 		respBuilder := returns[0].Interface().(*ResponseBuilder)
 		respBuilder.write(w)
@@ -133,9 +132,9 @@ func handleWithBody(callback interface{}) httprouter.Handle {
 		writer := new(ResponseBuilder)
 		m := reflect.ValueOf(callback)
 
-		//get parameter in callback
-		//only the first parameter are considered the real parameter,
-		//no matter how much params you have
+		// get parameter in callback
+		// only the first parameter are considered the real parameter,
+		// no matter how much params you have
 		param := reflect.New(m.Type().In(0))
 		if err := bodyDecoder(r.Body, param); err != nil {
 			writer.BadRequest(err.Error())

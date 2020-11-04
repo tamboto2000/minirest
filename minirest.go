@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-//Minirest is singleton for Minirest framework
+// Minirest is singleton for Minirest framework
 type Minirest struct {
 	services    map[string]Service
 	controllers map[string]Controller
@@ -23,7 +23,7 @@ type keyVal struct {
 	val string
 }
 
-//New initiate new Minirest
+// New initiate new Minirest
 func New() *Minirest {
 	return &Minirest{
 		services:    make(map[string]Service),
@@ -32,7 +32,7 @@ func New() *Minirest {
 	}
 }
 
-//RunServer run http server
+// RunServer run http server
 func (mn *Minirest) RunServer() {
 	var addr string
 	if mn.ip != "" {
@@ -46,18 +46,18 @@ func (mn *Minirest) RunServer() {
 	log.Fatal(http.ListenAndServe(addr, mn.router))
 }
 
-//ServeIP set http server IP
+// ServeIP set http server IP
 func (mn *Minirest) ServeIP(ip string) {
 	mn.ip = ip
 }
 
-//ServePort set http server port
+// ServePort set http server port
 func (mn *Minirest) ServePort(port string) {
 	mn.port = port
 }
 
-//AddService add service.
-//Service must be pointer to struct
+// AddService add service.
+// Service must be pointer to struct
 func (mn *Minirest) AddService(service Service) {
 	val := reflect.ValueOf(service)
 	service.Init()
@@ -65,9 +65,9 @@ func (mn *Minirest) AddService(service Service) {
 	mn.services[servName[len(servName)-1]] = service
 }
 
-//AddController add controller.
-//You can link services srv into controller, see Controller and AddService for more information.
-//If service is not registered, it will automatically register it
+// AddController add controller.
+// You can link services srv into controller, see Controller and AddService for more information.
+// If service is not registered, it will automatically register it
 func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	val := reflect.ValueOf(controller)
 
@@ -77,7 +77,7 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 		val = reflect.New(val.Type()).Elem()
 	}
 
-	//if srv not nil, link services to controller
+	// if srv not nil, link services to controller
 	if srv != nil || len(srv) != 0 {
 		for _, s := range srv {
 			sname := strings.Split(reflect.ValueOf(s).Type().String(), ".")
@@ -97,7 +97,7 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 		}
 	}
 
-	//call controller.Endpoints and register all endpoints
+	// call controller.Endpoints and register all endpoints
 	endpoints := controller.Endpoints()
 	for _, endpoint := range endpoints.endpoints {
 		method := strings.ToLower(endpoint.method)
@@ -127,7 +127,7 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 	mn.controllers[ctrlName[len(ctrlName)-1]] = controller
 }
 
-//CORS set CORS
+// CORS set CORS
 func (mn *Minirest) CORS(opt CORSOption) {
 	mn.router.HandleMethodNotAllowed = true
 	mn.router.HandleOPTIONS = true
@@ -159,7 +159,7 @@ func (mn *Minirest) CORS(opt CORSOption) {
 	})
 }
 
-//CORSOption set options for CORS headers
+// CORSOption set options for CORS headers
 type CORSOption struct {
 	AllowOrigin      string
 	AllowCredentials string

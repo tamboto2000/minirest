@@ -1,7 +1,6 @@
 package minirest
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -110,7 +109,7 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 				handle = handleWithoutBody(endpoint.callback)
 			}
 
-			mn.router.Handle(method, endpoints.basePath+endpoint.path, handle)
+			mn.router.Handle(endpoint.method, endpoints.basePath+endpoint.path, handle)
 		}
 
 		if method == "post" || method == "put" || method == "patch" {
@@ -120,7 +119,7 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 				handle = handleWithBody(endpoint.callback)
 			}
 
-			mn.router.Handle(method, endpoints.basePath+endpoint.path, handle)
+			mn.router.Handle(endpoint.method, endpoints.basePath+endpoint.path, handle)
 		}
 	}
 
@@ -130,9 +129,9 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 
 //CORS set CORS
 func (mn *Minirest) CORS(opt CORSOption) {
+	mn.router.HandleMethodNotAllowed = true
 	mn.router.HandleOPTIONS = true
 	mn.router.GlobalOPTIONS = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("CORS")
 		if r.Header.Get("Access-Control-Request-Method") != "" {
 			header := w.Header()
 			if opt.AllowOrigin != "" {

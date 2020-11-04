@@ -48,7 +48,9 @@ func (ep *Endpoints) PATCH(path string, callback interface{}) {
 	ep.endpoints = append(ep.endpoints, endpoint{"PATCH", path, callback})
 }
 
-//Middlewares resgiter middleware chain
+//Middlewares register middleware chain.
+//miniREST is using julienschmidt/httprouter for implementing router,
+//so the middleware will use httprouter.Handle as its handle
 func (ep *Endpoints) Middlewares(mds ...handleToHandle) {
 	if ep.middleware == nil {
 		ep.middleware = new(handleChain)

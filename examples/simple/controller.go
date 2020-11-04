@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/tamboto2000/minirest"
 )
 
@@ -44,8 +46,23 @@ func (smp *SimpleController) Post(person *Person) *minirest.ResponseBuilder {
 func (smp *SimpleController) Endpoints() *minirest.Endpoints {
 	endpoints := new(minirest.Endpoints)
 	endpoints.BasePath("/simple")
+	endpoints.Middlewares(Middleware1, Middleware2)
 	endpoints.GET("/:id/:name/:uuid", smp.Get)
 	endpoints.POST("/", smp.Post)
 
 	return endpoints
+}
+
+func Middleware1(next httprouter.Handle) httprouter.Handle {
+	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		fmt.Println("middleware 1")
+		next(w, r, p)
+	})
+}
+
+func Middleware2(next httprouter.Handle) httprouter.Handle {
+	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		fmt.Println("middleware 2")
+		next(w, r, p)
+	})
 }

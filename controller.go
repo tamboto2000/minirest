@@ -16,9 +16,9 @@ import (
 //If you want to register service into controller, make sure you have field with the same name as the service,
 //example:
 //
-//type Controller struct {
-// 	UserService *UserService
-// 	ItemService *ItemService
+// type Controller struct {
+// 	 UserService *UserService
+// 	 ItemService *ItemService
 // }
 type Controller interface {
 	//Endpoints register all endpoints to its handler.

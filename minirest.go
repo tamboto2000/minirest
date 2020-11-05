@@ -68,9 +68,9 @@ func (mn *Minirest) AddService(service Service) {
 	}
 }
 
-// LinkService link service dest betweens services svc.
-// If service not registered, it will automatically registered
-// Service must have fields with same name as services that want to be linked
+// LinkService link service dest with services svc.
+// If service not registered, it will automatically registered.
+// Service must have fields with same name as services that want to be linked.
 // example:
 //  type Service struct {
 //  	UserService *UserService

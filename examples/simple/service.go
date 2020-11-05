@@ -1,11 +1,12 @@
 package main
 
 type SimpleService struct {
-	Message string
+	Message        string
+	Simple2Service *Simple2Service
 }
 
 func (sv *SimpleService) Init() {
-	sv.Message = "Hello, world!"
+	sv.Message = "(SimpleService) Hello, world!"
 }
 
 type Simple2Service struct {
@@ -13,5 +14,5 @@ type Simple2Service struct {
 }
 
 func (sv2 *Simple2Service) Init() {
-	sv2.Message = "Hello, world!"
+	sv2.Message = "(Simple2Service) Hello, world!"
 }

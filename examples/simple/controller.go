@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/tamboto2000/minirest"
 )
 
@@ -24,7 +22,7 @@ type SimpleController struct {
 
 func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Person) *minirest.ResponseBuilder {
 	responseBuilder := new(minirest.ResponseBuilder)
-	fmt.Println(smp.Simple2Service.Message)
+	fmt.Println(smp.SimpleService.Message)
 	return responseBuilder.Ok(Person{
 		ID:       id,
 		UUID:     uuid,
@@ -36,6 +34,7 @@ func (smp *SimpleController) Get(id int, name *string, uuid float64, filter *Per
 }
 
 func (smp *SimpleController) Post(person *Person) *minirest.ResponseBuilder {
+	fmt.Println(smp.SimpleService.Simple2Service.Message)
 	responseBuilder := new(minirest.ResponseBuilder)
 	return responseBuilder.
 		Status(200).
@@ -51,18 +50,4 @@ func (smp *SimpleController) Endpoints() *minirest.Endpoints {
 	endpoints.POST("/", smp.Post)
 
 	return endpoints
-}
-
-func Middleware1(next httprouter.Handle) httprouter.Handle {
-	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		fmt.Println("middleware 1")
-		next(w, r, p)
-	})
-}
-
-func Middleware2(next httprouter.Handle) httprouter.Handle {
-	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		fmt.Println("middleware 2")
-		next(w, r, p)
-	})
 }

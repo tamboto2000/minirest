@@ -62,7 +62,48 @@ func (mn *Minirest) AddService(service Service) {
 	val := reflect.ValueOf(service)
 	service.Init()
 	servName := strings.Split(val.Type().String(), ".")
-	mn.services[servName[len(servName)-1]] = service
+	servNameStr := servName[len(servName)-1]
+	if _, ok := mn.services[servNameStr]; !ok {
+		mn.services[servNameStr] = service
+	}
+}
+
+// LinkService link service dest betweens services svc.
+// If service not registered, it will automatically registered
+// Service must have fields with same name as services that want to be linked
+// example:
+//  type Service struct {
+//  	UserService *UserService
+//  	ItemService *ItemService
+//  }
+func (mn *Minirest) LinkService(dest Service, svcs ...Service) {
+	var val reflect.Value
+	sname := strings.Split(reflect.ValueOf(dest).Type().String(), ".")
+	snamestr := sname[len(sname)-1]
+	if svc, ok := mn.services[snamestr]; ok {
+		val = reflect.ValueOf(svc).Elem()
+	} else {
+		dest.Init()
+		mn.AddService(dest)
+		val = reflect.ValueOf(dest).Elem()
+	}
+
+	for _, svc := range svcs {
+		sname := strings.Split(reflect.ValueOf(svc).Type().String(), ".")
+		snamestr := sname[len(sname)-1]
+		f := val.FieldByName(snamestr)
+		if !f.IsValid() {
+			panic(snamestr + " cannot be linked to service: no match field exist")
+		}
+
+		if regsrv, ok := mn.services[snamestr]; ok {
+			f.Set(reflect.ValueOf(regsrv))
+		} else {
+			svc.Init()
+			f.Set(reflect.ValueOf(svc))
+			mn.AddService(svc)
+		}
+	}
 }
 
 // AddController add controller.

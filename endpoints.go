@@ -8,6 +8,8 @@ type endpoint struct {
 
 // Endpoints register handlers its path and method
 type Endpoints struct {
+	// Set to true for returning gzip encoded response on all endpoints
+	Gzip       bool
 	basePath   string
 	endpoints  []endpoint
 	middleware *handleChain

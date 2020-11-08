@@ -38,6 +38,8 @@ type Response struct {
 
 // ResponseBuilder is a response builder
 type ResponseBuilder struct {
+	// Set to true for returning gzip encoded response
+	Gzip       bool
 	statusCode int
 	headers    [][2]string
 	body       interface{}
@@ -153,6 +155,17 @@ func (resp *ResponseBuilder) write(w http.ResponseWriter) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	if resp.Gzip {
+		data, err := json.Marshal(resp.body)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		writeGzipResp(w, data, resp.statusCode)
+		return
+	}
+
 	w.WriteHeader(resp.statusCode)
 	if err := json.NewEncoder(w).Encode(resp.body); err != nil {
 		log.Println(err.Error())

@@ -11,6 +11,8 @@ import (
 
 // Minirest is singleton for Minirest framework
 type Minirest struct {
+	// Set to true for returning gzip encoded response globally
+	Gzip        bool
 	services    map[string]Service
 	controllers map[string]Controller
 	router      *httprouter.Router
@@ -150,6 +152,10 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 				handle = handleWithoutBody(endpoint.callback)
 			}
 
+			if endpoints.Gzip || mn.Gzip {
+				handle = makeGzipHandler(handle)
+			}
+
 			mn.router.Handle(endpoint.method, endpoints.basePath+endpoint.path, handle)
 		}
 
@@ -158,6 +164,10 @@ func (mn *Minirest) AddController(controller Controller, srv ...Service) {
 				handle = endpoints.middleware.handleChain(handleWithBody(endpoint.callback))
 			} else {
 				handle = handleWithBody(endpoint.callback)
+			}
+
+			if endpoints.Gzip || mn.Gzip {
+				handle = makeGzipHandler(handle)
 			}
 
 			mn.router.Handle(endpoint.method, endpoints.basePath+endpoint.path, handle)

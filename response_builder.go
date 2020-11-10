@@ -128,10 +128,10 @@ func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
 }
 
 func (resp *ResponseBuilder) TooManyRequest(desc string) *ResponseBuilder {
-	resp.statusCode = CodeMethodNotAllowed
+	resp.statusCode = CodeTooManyRequest
 	resp.body = Response{
-		StatusCode:  CodeMethodNotAllowed,
-		Status:      MsgMethodNotAllowed,
+		StatusCode:  CodeTooManyRequest,
+		Status:      MsgTooManyRequest,
 		Description: desc,
 	}
 

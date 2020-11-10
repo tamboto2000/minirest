@@ -13,6 +13,7 @@ const (
 	CodeBadRequest       = 400
 	CodeNotFound         = 404
 	CodeMethodNotAllowed = 405
+	CodeTooManyRequest   = 429
 	CodeInternalError    = 500
 	CodeOverload         = 503
 )
@@ -24,6 +25,7 @@ const (
 	MsgBadRequest       = "bad_request"
 	MsgNotFound         = "not_found"
 	MsgMethodNotAllowed = "method_not_allowed"
+	MsgTooManyRequest   = "too_many_request"
 	MsgInternalError    = "internal_error"
 	MsgOverloadError    = "server_overload"
 )
@@ -115,6 +117,17 @@ func (resp *ResponseBuilder) NotFound(desc string) *ResponseBuilder {
 
 // MethodNotAllowed build response with HTTP Status 405
 func (resp *ResponseBuilder) MethodNotAllowed(desc string) *ResponseBuilder {
+	resp.statusCode = CodeMethodNotAllowed
+	resp.body = Response{
+		StatusCode:  CodeMethodNotAllowed,
+		Status:      MsgMethodNotAllowed,
+		Description: desc,
+	}
+
+	return resp
+}
+
+func (resp *ResponseBuilder) TooManyRequest(desc string) *ResponseBuilder {
 	resp.statusCode = CodeMethodNotAllowed
 	resp.body = Response{
 		StatusCode:  CodeMethodNotAllowed,
